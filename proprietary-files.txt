@@ -671,6 +671,18 @@ vendor/lib64/vendor.display.color@1.4.so|346fbc16b0df00243d5987903bdbaded
 vendor/lib64/vendor.display.color@1.5.so|b2ed3a002cefa18f50303ce66daa6243
 vendor/lib64/vendor.display.postproc@1.0.so|2c7fc9a20934c6db6a0c6578c4993e60
 
+# Display Feature
+vendor/bin/hw/vendor.xiaomi.hardware.displayfeature@1.0-service
+vendor/etc/init/vendor.xiaomi.hardware.displayfeature@1.0-service.rc
+vendor/lib64/hw/displayfeature.default.so
+vendor/lib64/hw/vendor.xiaomi.hardware.displayfeature@1.0-impl.so
+vendor/bin/displayfeature
+vendor/lib64/vendor.xiaomi.hardware.displayfeature@1.0.so
+vendor/lib64/libclient2slpi.notifier.so
+vendor/lib64/libdisplayfeature.so
+vendor/lib64/libdisplayfeatureservice.so
+vendor/lib64/libmi-stc-HW-modulate.so
+
 # DPM
 system/framework/tcmclient.jar
 system_ext/bin/dpmd
