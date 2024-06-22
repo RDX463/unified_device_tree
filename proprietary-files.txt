@@ -32,6 +32,11 @@ vendor/lib64/libadsp_default_listener.so
 vendor/lib64/libadsprpc.so
 
 # ADSP Modules
+vendor/lib/rfsa/adsp/bm2n06.bin
+vendor/lib/rfsa/adsp/bm2n08.bin
+vendor/lib/rfsa/adsp/bm2n13.bin
+vendor/lib/rfsa/adsp/bm2n14.bin
+vendor/lib/rfsa/adsp/bm2n15.bin
 vendor/lib/rfsa/adsp/capi_v2_aptX_CLHDADV_Encoder.so
 vendor/lib/rfsa/adsp/capi_v2_aptX_CLHDAD_Speech_Decoder.so
 vendor/lib/rfsa/adsp/capi_v2_dap_cpdp.so
@@ -284,6 +289,13 @@ vendor/lib64/libtriplecam_video_optical_zoom.so
 vendor/lib64/libvideoBokeh.so
 vendor/lib64/libvideofilter_only.so
 vendor/lib64/libvidhance.so
+vendor/lib64/libvidhance_active_ois.so
+vendor/lib64/libvidhance_dmbr.so
+vendor/lib64/libvidhance_face_stabilizer.so
+vendor/lib64/libvidhance_horizon_correction.so
+vendor/lib64/libvidhance_ldc.so
+vendor/lib64/libvidhance_stabilizer.so
+vendor/lib64/libvidhance_super_stabilization.so
 vendor/lib64/libwa_depth.so
 vendor/lib64/libwa_refocus.so
 vendor/lib64/vendor.qti.hardware.camera.postproc@1.0-service-impl.so
@@ -406,6 +418,7 @@ vendor/etc/camera/aivsParams2
 vendor/etc/camera/arcsat_2sat.bin
 vendor/etc/camera/arcsat_2sat_first.bin
 vendor/etc/camera/arcsat_2sat_second.bin
+vendor/etc/camera/beautyLens/dualcam_beauty_effect_pre_config.json
 vendor/etc/camera/beauty_style_blue.cng
 vendor/etc/camera/beauty_style_masculine.cng
 vendor/etc/camera/beauty_style_neutral.cng
@@ -506,7 +519,9 @@ vendor/lib/libmmcamera_mfnr.so
 vendor/lib/libmmcamera_mfnr_t4.so
 vendor/lib/libmmcamera_pdpc.so
 vendor/lib64/libjpege.so
+vendor/lib64/libloadalgo_stub.so
 vendor/lib64/libmctfengine_stub.so
+vendor/lib64/libmiStereoFactoryRemapBasicLib.so
 vendor/lib64/libmmcamera_bestats.so
 vendor/lib64/libmmcamera_cac3.so
 vendor/lib64/libmmcamera_faceproc.so
@@ -1275,6 +1290,15 @@ vendor/lib64/vendor.xiaomi.hardware.citsensorservice@1.1.so
 vendor/etc/sensors/config/ak991x_dri_0.json
 vendor/etc/sensors/config/lsm6dso_0.json
 vendor/etc/sensors/config/power_0.json
+vendor/etc/sensors/config/sm7350_ak991x_0.json
+vendor/etc/sensors/config/sm7350_bmi3x0_0.json
+vendor/etc/sensors/config/sm7350_default_sensors.json
+vendor/etc/sensors/config/sm7350_dynamic_sensors.json
+vendor/etc/sensors/config/sm7350_irq.json
+vendor/etc/sensors/config/sm7350_lsm6dso_0.json
+vendor/etc/sensors/config/sm7350_power_0.json
+vendor/etc/sensors/config/sm7350_stk3a5x_0.json
+vendor/etc/sensors/config/sm7350_sx933x_0.json
 vendor/etc/sensors/config/sns_amd.json
 vendor/etc/sensors/config/sns_amd_sw_disabled.json
 vendor/etc/sensors/config/sns_amd_sw_enabled.json
