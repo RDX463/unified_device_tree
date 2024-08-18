@@ -31,114 +31,73 @@
 #=============================================================================
 
 function configure_zram_parameters() {
-	MemTotalStr=`cat /proc/meminfo | grep MemTotal`
-	MemTotal=${MemTotalStr:16:8}
+    # Enable zRAM and set its size to 4096 MiB
+    echo lz4 > /sys/block/zram0/comp_algorithm
+    echo 4096M > /sys/block/zram0/disksize
 
-	low_ram=`getprop ro.config.low_ram`
+    # Enable deduplication if supported
+    if [ -f /sys/block/zram0/use_dedup ]; then
+        echo 1 > /sys/block/zram0/use_dedup
+    fi
 
-	# Zram disk - 75% for Go and < 2GB devices .
-	# For >2GB Non-Go devices, size = 50% of RAM size. Limit the size to 4GB.
-	# And enable lz4 zram compression for Go targets.
-
-	let RamSizeGB="( $MemTotal / 1048576 ) + 1"
-	diskSizeUnit=M
-	if [ $RamSizeGB -le 2 ]; then
-		let zRamSizeMB="( $RamSizeGB * 1024 ) * 3 / 4"
-	else
-		let zRamSizeMB="( $RamSizeGB * 1024 ) / 2"
-	fi
-
-	# use MB avoid 32 bit overflow
-	if [ $zRamSizeMB -gt 4096 ]; then
-		let zRamSizeMB=4096
-	fi
-
-	if [ "$low_ram" == "true" ]; then
-		echo lz4 > /sys/block/zram0/comp_algorithm
-	fi
-
-	if [ -f /sys/block/zram0/disksize ]; then
-		if [ -f /sys/block/zram0/use_dedup ]; then
-			echo 1 > /sys/block/zram0/use_dedup
-		fi
-		echo "$zRamSizeMB""$diskSizeUnit" > /sys/block/zram0/disksize
-
-		# ZRAM may use more memory than it saves if SLAB_STORE_USER
-		# debug option is enabled.
-		if [ -e /sys/kernel/slab/zs_handle ]; then
-			echo 0 > /sys/kernel/slab/zs_handle/store_user
-		fi
-		if [ -e /sys/kernel/slab/zspage ]; then
-			echo 0 > /sys/kernel/slab/zspage/store_user
-		fi
-
-		mkswap /dev/block/zram0
-		swapon /dev/block/zram0 -p 32758
-	fi
+    # Set up the swap space on zRAM
+    mkswap /dev/block/zram0
+    swapon /dev/block/zram0 -p 32758
 }
 
-function configure_read_ahead_kb_values() {
-	MemTotalStr=`cat /proc/meminfo | grep MemTotal`
-	MemTotal=${MemTotalStr:16:8}
+function configure_memory_parameters_balanced() {
+    configure_zram_parameters
 
-	dmpts=$(ls /sys/block/*/queue/read_ahead_kb | grep -e dm -e mmc)
+    # Enable memory pressure detection
+    echo 1 > /dev/cpuset/memory_pressure_enabled
 
-	# Set 128 for <= 3GB &
-	# set 512 for >= 4GB targets.
-	if [ $MemTotal -le 3145728 ]; then
-		ra_kb=128
-	else
-		ra_kb=512
-	fi
-	if [ -f /sys/block/mmcblk0/bdi/read_ahead_kb ]; then
-		echo $ra_kb > /sys/block/mmcblk0/bdi/read_ahead_kb
-	fi
-	if [ -f /sys/block/mmcblk0rpmb/bdi/read_ahead_kb ]; then
-		echo $ra_kb > /sys/block/mmcblk0rpmb/bdi/read_ahead_kb
-	fi
-	for dm in $dmpts; do
-		echo $ra_kb > $dm
-	done
-}
+    # Get total RAM size in KB
+    RAM_SIZE=$(grep MemTotal /proc/meminfo | awk '{print $2}')
 
-function configure_memory_parameters() {
-	# Set Memory parameters.
-	#
-	# Set per_process_reclaim tuning parameters
-	# All targets will use vmpressure range 50-70,
-	# All targets will use 512 pages swap size.
-	#
-	# Set Low memory killer minfree parameters
-	# 32 bit Non-Go, all memory configurations will use 15K series
-	# 32 bit Go, all memory configurations will use uLMK + Memcg
-	# 64 bit will use Google default LMK series.
-	#
-	# Set ALMK parameters (usually above the highest minfree values)
-	# vmpressure_file_min threshold is always set slightly higher
-	# than LMK minfree's last bin value for all targets. It is calculated as
-	# vmpressure_file_min = (last bin - second last bin ) + last bin
-	#
-	# Set allocstall_threshold to 0 for all targets.
-	#
+    if [ "$RAM_SIZE" -le 6291456 ]; then
+        # 6 GB RAM configuration
 
-	ProductName=`getprop ro.product.name`
+        # Agressive swappiness
+        echo 60 > /proc/sys/vm/swappiness
 
-	configure_zram_parameters
-	configure_read_ahead_kb_values
-	echo 60 > /proc/sys/vm/swappiness
+        # Adjust dirty memory settings
+        echo 15 > /proc/sys/vm/dirty_ratio
+        echo 5 > /proc/sys/vm/dirty_background_ratio
 
-        # Disable wsf  beacause we are using efk.
-        # wsf Range : 1..1000. So set to bare minimum value 1.
-        echo 1 > /proc/sys/vm/watermark_scale_factor
+        # Set minimum free memory
+        echo 831072 > /proc/sys/vm/min_free_kbytes
 
-	MemTotalStr=`cat /proc/meminfo | grep MemTotal`
-	MemTotal=${MemTotalStr:16:8}
-	if [ $MemTotal -le 8388608 ]; then
-		echo 0 > /proc/sys/vm/watermark_boost_factor
-	fi
+    else
+        # 8 GB RAM configuration
 
-	#Spawn 2 kswapd threads which can help in fast reclaiming of pages
-	echo 2 > /proc/sys/vm/kswapd_threads
+        # Agressive swappiness
+        echo 70 > /proc/sys/vm/swappiness
+
+        # Adjust dirty memory settings
+        echo 12 > /proc/sys/vm/dirty_ratio
+        echo 5 > /proc/sys/vm/dirty_background_ratio
+
+        # Set minimum free memory
+        echo 631072 > /proc/sys/vm/min_free_kbytes
+    fi
+
+    # Common settings for both 6 GB and 8 GB configurations
+
+    # Enable OOM kill allocating task
+    echo 1 > /proc/sys/vm/oom_kill_allocating_task
+
+    # Set overcommit ratio
+    echo 50 > /proc/sys/vm/overcommit_ratio
+
+    # Adjust VFS cache pressure
+    echo 50 > /proc/sys/vm/vfs_cache_pressure
+    
+    # Set extra free kbytes
+    echo 303750 > /proc/sys/vm/extra_free_kbytes
+
+    # Adjust readahead values (ultra-speed configuration)
+    echo 2048 > /sys/block/mmcblk0/queue/read_ahead_kb
+    echo 2048 > /sys/block/mmcblk1/queue/read_ahead_kb
 }
 
 rev=`cat /sys/devices/soc0/revision`
@@ -193,10 +152,12 @@ echo 0-6 > /dev/cpuset/foreground/cpus
 
 # configure governor settings for silver cluster
 echo "schedutil" > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
-echo 0 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/down_rate_limit_us
-echo 0 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/up_rate_limit_us
+echo 20000 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/down_rate_limit_us
+echo 500 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/up_rate_limit_us
+echo 2000 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/up_rate_limit_us_screen_off
+echo 2000 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/down_rate_limit_us_screen_off
 echo 1152000 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/hispeed_freq
-echo 691200 > /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq
+echo 300000 > /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq
 echo 1 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/pl
 
 # configure input boost settings
@@ -205,8 +166,10 @@ echo 120 > /sys/devices/system/cpu/cpu_boost/input_boost_ms
 
 # configure governor settings for gold cluster
 echo "schedutil" > /sys/devices/system/cpu/cpufreq/policy4/scaling_governor
-echo 0 > /sys/devices/system/cpu/cpufreq/policy4/schedutil/down_rate_limit_us
-echo 0 > /sys/devices/system/cpu/cpufreq/policy4/schedutil/up_rate_limit_us
+echo 10000 > /sys/devices/system/cpu/cpufreq/policy4/schedutil/down_rate_limit_us
+echo 1000 > /sys/devices/system/cpu/cpufreq/policy4/schedutil/up_rate_limit_us
+echo 2000 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/up_rate_limit_us_screen_off
+echo 2000 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/down_rate_limit_us_screen_off
 echo 1228800 > /sys/devices/system/cpu/cpufreq/policy4/schedutil/hispeed_freq
 echo 691200 > /sys/devices/system/cpu/cpufreq/policy4/scaling_min_freq
 echo 85 > /sys/devices/system/cpu/cpufreq/policy4/schedutil/hispeed_load
@@ -218,8 +181,10 @@ echo 1 > /sys/devices/system/cpu/cpufreq/policy4/schedutil/pl
 
 # configure governor settings for gold+ cluster
 echo "schedutil" > /sys/devices/system/cpu/cpufreq/policy7/scaling_governor
-echo 0 > /sys/devices/system/cpu/cpufreq/policy7/schedutil/down_rate_limit_us
-echo 0 > /sys/devices/system/cpu/cpufreq/policy7/schedutil/up_rate_limit_us
+echo 2000 > /sys/devices/system/cpu/cpufreq/policy7/schedutil/down_rate_limit_us
+echo 5000 > /sys/devices/system/cpu/cpufreq/policy7/schedutil/up_rate_limit_us
+echo 2000 > /sys/devices/system/cpu/cpu7/cpufreq/schedutil/up_rate_limit_us_screen_off
+echo 2000 > /sys/devices/system/cpu/cpu7/cpufreq/schedutil/down_rate_limit_us_screen_off
 echo 1324800 > /sys/devices/system/cpu/cpufreq/policy7/schedutil/hispeed_freq
 echo 806400 > /sys/devices/system/cpu/cpufreq/policy7/scaling_min_freq
 echo 85 > /sys/devices/system/cpu/cpufreq/policy7/schedutil/hispeed_load
@@ -353,8 +318,8 @@ do
 done
 
 # set deep as default suspend mode
-echo deep > /sys/power/mem_sleep
+echo deep > /sys/power/mem_sleep 
 
-configure_memory_parameters
+configure_memory_parameters_balanced
 
 setprop vendor.post_boot.parsed 1
