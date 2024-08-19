@@ -169,7 +169,15 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     libcodec2_vndk.vendor \
     libcodec2_hidl@1.0.vendor \
-    libcodec2_soft_common.vendor
+    libcodec2_hidl@1.2.vendor \
+    libcodec2_soft_common.vendor \
+    android.hardware.media.c2@1.1.vendor \
+    android.hardware.media.c2@1.2.vendor \
+    libavservices_minijail.vendor \
+    libavservices_minijail_vendor \
+    libstagefrighthw \
+    libstagefright_softomx.vendor \
+    libstagefright_softomx_plugin.vendor
 
 # DebugFS
 PRODUCT_SET_DEBUGFS_RESTRICTIONS := true
@@ -375,8 +383,7 @@ PRODUCT_PACKAGES += \
     libOmxCore \
     libOmxEvrcEnc \
     libOmxG711Enc \
-    libOmxQcelp13Enc \
-    libstagefrighthw
+    libOmxQcelp13Enc
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/media/init.qti.media.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qti.media.sh \
