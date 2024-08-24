@@ -1,4 +1,4 @@
-# All unpinned blobs below are extracted from redwood_global-user 14 UKQ1.231003.002 V816.0.4.0.UMSMIXM release-keys
+# All unpinned blobs below are extracted from redwood_global-user 14 UKQ1.231003.002 V816.0.6.0.UMSMIXM release-keys
 
 # ACDB
 vendor/etc/acdbdata/Forte/Forte_Bluetooth_cal.acdb
@@ -1012,9 +1012,9 @@ vendor/lib64/unnhal-acc-htp.so
 vendor/lib/libsn100u_fw.so:vendor/lib64/libsn100u_fw.so
 
 # NFC configs
-vendor/etc/libnfc-nxp_RF.conf:vendor/libnfc-nxp_RF.conf
 vendor/etc/libnfc-nci.conf
 vendor/etc/libnfc-nxp.conf
+vendor/etc/libnfc-nxp_RF.conf
 
 # NVRAM
 vendor/bin/nv_mac
