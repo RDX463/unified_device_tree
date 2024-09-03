@@ -683,6 +683,10 @@ vendor/lib64/libdisplayfeature.so
 vendor/lib64/libdisplayfeatureservice.so
 vendor/lib64/libmi-stc-HW-modulate.so
 
+# Device Features
+product/etc/device_features/redwood.xml
+product/etc/device_features/redwoodin.xml
+
 # DPM
 system/framework/tcmclient.jar
 system_ext/bin/dpmd
