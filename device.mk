@@ -361,11 +361,11 @@ PRODUCT_COPY_FILES += \
 # Kernel
 PRODUCT_ENABLE_UFFD_GC := false
 
-# Fingerprint
-PRODUCT_PACKAGES += \
-    vendor.xiaomi.hardware.fx.tunnel@1.0.vendor
-
 # Keylayout
+PRODUCT_SYSTEM_PROPERTIES += \
+    ro.product.mod_device=redwood_global
+	
+# Init
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/keylayout/uinput-goodix.kl:$(TARGET_COPY_OUT_VENDOR)/usr/keylayout/uinput-goodix.kl
 
