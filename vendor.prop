@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Audio
 aaudio.hw_burst_min_usec=2000
 aaudio.mmap_exclusive_policy=2
@@ -291,3 +292,7 @@ vendor.sys.video.disable.ubwc=1
 
 # Zygote
 zygote.critical_window.minute=10
+
+# Recovery properties
+ro.recovery.batteryless=true
+
